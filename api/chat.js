@@ -1,20 +1,15 @@
 export default async function handler(req, res) {
-  // Only allow POST
+  // CORS — allow your GitHub Pages site
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  // Only allow requests from your GitHub Pages site
-  const origin = req.headers.origin || '';
-  const allowed = ['https://afri-tah.github.io', 'http://localhost'];
-  if (!allowed.some(o => origin.startsWith(o))) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   const { prompt } = req.body;
   if (!prompt || typeof prompt !== 'string') {
