@@ -1,0 +1,5 @@
+{
+  "name": "studysphere-proxy",
+  "version": "1.0.0",
+  "description": "StudySphere AI proxy — keeps API key server-side"
+}
