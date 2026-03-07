@@ -1,4 +1,5 @@
-export default async function handler(req, res) {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'HTTP-export default async function handler(req, res) {
   // CORS — allow your GitHub Pages site
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -16,15 +17,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing prompt' });
   }
 
-  // Models to try in order (all free on OpenRouter)
+  // Free models on OpenRouter — updated March 2026
   const models = [
+    'openrouter/free',
+    'meta-llama/llama-4-maverick:free',
+    'meta-llama/llama-4-scout:free',
     'meta-llama/llama-3.3-70b-instruct:free',
-    'meta-llama/llama-3.1-8b-instruct:free',
-    'google/gemma-3-27b-it:free',
-    'google/gemma-3-12b-it:free',
-    'deepseek/deepseek-r1-distill-llama-70b:free',
-    'qwen/qwen3-14b:free',
-    'qwen/qwen3-8b:free'
+    'deepseek/deepseek-chat-v3-0324:free',
+    'deepseek/deepseek-r1:free',
+    'mistralai/mistral-small-3.1-24b-instruct:free',
+    'google/gemini-2.5-pro-exp-03-25:free'
   ];
 
   const errors = [];
@@ -36,6 +38,28 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'HTTP-Referer': 'https://afri-tah.github.io',
+          'X-Title': 'StudySphere'
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.4,
+          max_tokens: 4096
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) { errors.push(`${model}: ${data.error.message}`); continue; }
+      const text = data.choices?.[0]?.message?.content || '';
+      if (text) return res.status(200).json({ text });
+    } catch (e) {
+      errors.push(`${model}: ${e.message}`);
+    }
+  }
+
+  return res.status(502).json({ error: 'All models failed', details: errors });
+}
+': 'https://afri-tah.github.io',
           'X-Title': 'StudySphere'
         },
         body: JSON.stringify({
