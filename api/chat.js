@@ -1,6 +1,5 @@
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'HTTP-export default async function handler(req, res) {
-  // CORS — allow your GitHub Pages site
+module.exports = async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -17,9 +16,7 @@
     return res.status(400).json({ error: 'Missing prompt' });
   }
 
-  // Free models on OpenRouter — updated March 2026
   const models = [
-    'openrouter/free',
     'meta-llama/llama-4-maverick:free',
     'meta-llama/llama-4-scout:free',
     'meta-llama/llama-3.3-70b-instruct:free',
@@ -58,26 +55,4 @@
   }
 
   return res.status(502).json({ error: 'All models failed', details: errors });
-}
-': 'https://afri-tah.github.io',
-          'X-Title': 'StudySphere'
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.4,
-          max_tokens: 4096
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) { errors.push(`${model}: ${data.error.message}`); continue; }
-      const text = data.choices?.[0]?.message?.content || '';
-      if (text) return res.status(200).json({ text });
-    } catch (e) {
-      errors.push(`${model}: ${e.message}`);
-    }
-  }
-
-  return res.status(502).json({ error: 'All models failed', details: errors });
-}
+};
