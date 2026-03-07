@@ -1,29 +1,21 @@
 module.exports = async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { prompt } = req.body;
-  if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).json({ error: 'Missing prompt' });
-  }
+  if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
 
   const models = [
-    'meta-llama/llama-4-maverick:free',
-    'meta-llama/llama-4-scout:free',
+    'google/gemma-3-27b-it:free',
+    'google/gemma-3-12b-it:free',
+    'google/gemma-3-4b-it:free',
+    'google/gemma-2-9b-it:free',
     'meta-llama/llama-3.3-70b-instruct:free',
-    'deepseek/deepseek-chat-v3-0324:free',
-    'deepseek/deepseek-r1:free',
-    'mistralai/mistral-small-3.1-24b-instruct:free',
-    'google/gemini-2.5-pro-exp-03-25:free'
+    'meta-llama/llama-3.1-8b-instruct:free'
   ];
 
   const errors = [];
