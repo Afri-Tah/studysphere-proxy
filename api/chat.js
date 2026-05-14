@@ -9,42 +9,34 @@ module.exports = async function handler(req, res) {
   const { prompt } = req.body;
   if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
 
-  const models = [
-    'google/gemma-3-27b-it:free',
-    'google/gemma-3-12b-it:free',
-    'google/gemma-3-4b-it:free',
-    'google/gemma-2-9b-it:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'meta-llama/llama-3.1-8b-instruct:free'
-  ];
+  const apiKey = process.env.GEMINI_API_KEY;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-  const errors = [];
-  for (const model of models) {
-    try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://afri-tah.github.io',
-          'X-Title': 'StudySphere'
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
           temperature: 0.4,
-          max_tokens: 4096
-        })
-      });
+          maxOutputTokens: 4096
+        }
+      })
+    });
 
-      const data = await response.json();
-      if (data.error) { errors.push(`${model}: ${data.error.message}`); continue; }
-      const text = data.choices?.[0]?.message?.content || '';
-      if (text) return res.status(200).json({ text });
-    } catch (e) {
-      errors.push(`${model}: ${e.message}`);
+    const data = await response.json();
+
+    if (data.error) {
+      return res.status(502).json({ error: data.error.message });
     }
-  }
 
-  return res.status(502).json({ error: 'All models failed', details: errors });
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!text) return res.status(502).json({ error: 'No response from Gemini' });
+
+    return res.status(200).json({ text });
+
+  } catch (e) {
+    return res.status(502).json({ error: e.message });
+  }
 };
